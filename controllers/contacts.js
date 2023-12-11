@@ -3,7 +3,11 @@ const { Contact } = require("../models/contact");
 const { ctrlWrapper } = require("../helpers");
 
 const getAll = async (req, res, next) => {
-  const result = await Contact.find();
+  const { _id: owner } = req.user;
+  const { page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+
+  const result = await Contact.find({ owner }, "", { skip, limit });
   res.json(result);
 };
 
@@ -17,7 +21,8 @@ const getById = async (req, res, next) => {
 };
 
 const add = async (req, res, next) => {
-  const result = await Contact.create(req.body);
+  const { _id: owner } = req.user;
+  const result = await Contact.create({ ...req.body, owner });
   res.status(200).json(result);
 };
 
@@ -49,7 +54,9 @@ const updateStatusContact = async (req, res, next) => {
   const result = await Contact.findByIdAndUpdate(contactId, req.body, {
     new: true,
   });
+
   if (!result) {
+    console.log(result);
     res.status(404).json({ message: "Not found" });
   }
   res.json(result);

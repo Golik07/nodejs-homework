@@ -5,6 +5,7 @@ const env = require("dotenv");
 env.config();
 
 const contactsRouter = require("./routes/api/contacts");
+const authRouter = require("./routes/api/auth");
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
 
+app.use("/users", authRouter);
 app.use("/api/contacts", contactsRouter);
 
 app.use((req, res) => {
@@ -23,10 +25,9 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   const { status = 500, message = "Server error" } = err;
 
-  if (req.body) {
+  if (req.body.favorite === "") {
     res.status(400).json({ message: "missing field favorite" });
   }
-
   res.status(status).json(message);
 });
 
